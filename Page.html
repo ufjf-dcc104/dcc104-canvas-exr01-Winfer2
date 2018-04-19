@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Exemplo 04</title>
+    <script src="sprite.js"></script>
+</head>
+
+<body>
+    <h1>Exemplo 04</h1>
+    <canvas width="1080" height="620">
+        Seu browser não suporta canvas!</canvas>
+    <script>
+        var tela = document.getElementsByTagName("canvas")[0];
+        var ctx = tela.getContext("2d");
+
+        var pontos = 0;
+        var vidas = 5;
+        var record = 20;
+
+        var G = 3;
+        var V = 10-20*Math.random();
+        var dt = anterior = 0;
+        
+        var barra = new Sprite();
+        var combustivel = new Sprite();
+        barra.w=200;
+        combustivel.w = 200;
+        barra.y=10;
+        combustivel.y = 10;
+        combustivel.cor="green";
+
+        var fogo = new Sprite();
+        fogo.triangle=true;
+        fogo.cor = "orange";
+
+        var sprites = [];
+        var pc = new Sprite();
+        sprites.push(pc);
+        pc.triangle = true;
+        pc.w = 40;
+        pc.h = 60;
+
+        var lander = new Sprite();
+        lander.y = 610;
+        lander.x = 490;
+        lander.w = 100;
+        lander.cor = "blue";
+        lander.lander = true;
+        sprites.push(lander);
+
+        var moon = new Sprite();
+        moon.y = 620;
+        moon.x = 0;
+        moon.w = tela.width;
+        sprites.push(moon);
+
+        function limparTela() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, tela.width, tela.height);
+        }
+        function passo(t) {
+            dt = (t - anterior) / 1000;
+            for (var i = 0; i < sprites.length; i++) {
+                if (i > 0) {
+                    //sprites[i].perseguir(pc);
+                }
+                sprites[i].mover(dt);
+                sprites[i].impoeLimites(0, 0, tela.width, tela.height);
+                if (i > 0 && pc.imunidade <= 0 && pc.colidiuCom(sprites[i])) {
+                    if (!sprites[i].lander) {
+                        pc.cor = 'red';
+                        pc.x = 100;
+                        pc.y = 100;
+                        pc.vx = 0;
+                        pc.vy = 0;
+                        pc.imunidade = 3;
+                        vidas--;
+                        combustivel.w=200;
+                        V = 10-20*Math.random();
+                    } else {
+                        if(pc.vy<20){
+                            pontos+=10;
+                        }else{
+                            pc.cor = 'red';
+                            pc.imunidade = 3;
+                            vidas--;   
+                        }
+                        pc.x = 100;
+                        pc.y = 100;
+                        pc.vx = 0;
+                        pc.vy = 0;
+                        combustivel.w=200;
+                        V = 10-20*Math.random();
+                    }
+                } else {
+                    pc.cor = 'grey';
+                }
+            }
+            if (combustivel.w == 0 || pc.y>620){
+                pc.cor = 'red';
+                pc.x = 100;
+                pc.y = 100;
+                pc.vx = 0;
+                pc.vy = 0;
+                pc.imunidade = 3;
+                vidas--;
+                combustivel.w=200;
+                V = 10-20*Math.random();
+            }
+            if(pontos>record) record = pontos;
+            if (vidas === 0){
+                vidas = 5;
+                pontos = 0;
+            }
+            fogo.x=pc.x;
+            fogo.y=pc.y;
+            fogo.w=pc.w;
+            fogo.h=pc.ay/15;
+            limparTela();
+            for (var i = 0; i < sprites.length; i++) {
+                sprites[i].desenhar(ctx);
+                barra.desenhar(ctx);
+                combustivel.desenhar(ctx);
+                fogo.desenhar(ctx);
+            }
+
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("Pontos: "+pontos,880,50);
+            ctx.fillText("Vidas: "+vidas,880,100);
+            ctx.fillText("Recorde: "+record,880,150);
+            ctx.fillText("Velocidade: "+pc.vy.toFixed(1),880,200);
+            anterior = t;
+            requestAnimationFrame(passo);
+        }
+        requestAnimationFrame(passo);
+        addEventListener("keydown", function (e) {
+            switch (e.keyCode) {
+                case 37:
+                    combustivel.w-=5;
+                    pc.ax = -100;
+                    break;
+                case 39:
+                    combustivel.w-=5;
+                    pc.ax = +100;
+                    break;
+                case 38:
+                    combustivel.w-=5;
+                    pc.ay = -200;
+                    break;
+                case 40:
+                    combustivel.w-=5;
+                    pc.ay = +100;
+                    break; m
+                default:
+            }
+        });
+        addEventListener("keyup", function (e) {
+            switch (e.keyCode) {
+                case 37:
+                case 39:
+                    pc.ax = 0;
+                    break;
+                case 38:
+                case 40:
+                    pc.ay = 0;
+                    break;
+                default:
+            }
+        });
+    </script>
+</body>
+
+</html>
